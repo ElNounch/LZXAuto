@@ -27,8 +27,8 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
-      - name: Build single-file EXE
-        run: dotnet publish LZXAuto --configuration Release
+#      - name: Build single-file EXE
+#        run: dotnet publish LZXAuto --configuration Release
       - name: Push EXE online
         shell: pwsh
         run: |
