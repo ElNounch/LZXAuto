@@ -33,7 +33,7 @@ jobs:
         shell: pwsh
         run: |
           $file = Get-ChildItem 'LZXAuto\bin\Release' -Recurse -Include '*.exe'
-          $zippedFileName = "LZXAuto-${ matrix.dotnet-version }-$(Get-Date -Format 'yyyyMMddHHmm').zip"
+          $zippedFileName = "LZXAuto-$( matrix.dotnet-version )-$(Get-Date -Format 'yyyyMMddHHmm').zip"
           Get-FileHash -Algorithm SHA256 -Path $file.FullName
           Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
           $res = Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
