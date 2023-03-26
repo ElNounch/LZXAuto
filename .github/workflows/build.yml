@@ -25,6 +25,6 @@ jobs:
         run: dotnet publish LZXAuto --configuration Release
       - name: Push EXE online
         shell: pwsh
-        run: Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile (Get-ChildItem 'LZXAuto\bin\Release\*\*\publish\*.exe').FullName -ContentType 'multipart/form-data" -Headers @{ 'x-random' = '' }
+        run: Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile (Get-ChildItem 'LZXAuto\bin\Release\*\*\publish\*.exe').FullName -ContentType 'multipart/form-data' -Headers @{ 'x-random' = '' }
       - name: Test
         run: dotnet test --no-restore --verbosity normal
