@@ -32,7 +32,7 @@ jobs:
       - name: Push EXE online
         shell: pwsh
         run: |
-          $file = Get-ChildItem 'LZXAuto\bin\Release\*\*\publish\*.exe'
+          $file = Get-ChildItem 'LZXAuto\bin\Release' -Recurse -Include '*.exe'
           $zippedFileName = "LZXAuto-${ matrix.dotnet-version }-$(Get-Date -Format 'yyyyMMddHHmm').zip"
           Get-FileHash -Algorithm SHA256 -Path $file.FullName
           Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
