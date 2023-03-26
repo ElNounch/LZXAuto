@@ -27,16 +27,17 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
-#      - name: Build single-file EXE
-#        run: dotnet publish LZXAuto --configuration Release
+      - name: Build single-file EXE
+        run: dotnet publish LZXAuto --configuration Release
       - name: Push EXE online
         shell: pwsh
         run: |
-          $file = Get-ChildItem 'LZXAuto\bin\Release' -Recurse -Include '*.exe'
-          $zippedFileName = "LZXAuto-${{ matrix.dotnet-version }}-$(Get-Date -Format 'yyyyMMddHHmm').zip"
-          Get-FileHash -Algorithm SHA256 -Path $file.FullName
+          $publishFolder = Get-ChildItem -Path 'LZXAuto\bin\Release' -Recurse -Include 'publish'
+          $file = Get-ChildItem -Path $publishFolder -Recurse -Include '*.exe'
+          $zippedFileName = "LZXAuto-${{ matrix.dotnet-version }}-$( Get-Date -Format 'yyyyMMddHHmm' ).zip"
+          Get-FileHash -Algorithm SHA256 -Path $file
           Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
-          $res = Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
+          $res = Invoke-RestMethod -uri 'https://paste.c-net.org/' -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
           Write-Host $res.html.body.div.a.href
       - name: Test
         run: dotnet test --no-restore --verbosity normal

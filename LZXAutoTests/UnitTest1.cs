@@ -34,8 +34,7 @@ namespace LZXAutoTests
 			eng.SaveDictToFile(fileName, dict1);
 
 			ConcurrentDictionary<int, uint> dict2 = eng.LoadDictFromFile(fileName);
-			Assert.IsTrue(dict1[1234] == dict2[12345]);
-			Assert.IsTrue(dict1[12345] == dict2[123456]);
+			CollectionAssert.AreEqual(dict1, dict2);
 		}
 	}
 }
