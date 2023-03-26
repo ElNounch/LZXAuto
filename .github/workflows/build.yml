@@ -1,0 +1,42 @@
+name: dotnet build EXE and test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version: ["3.1.x", "6.0.x"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+#      - name: Build single-file EXE
+#        run: dotnet publish LZXAuto --configuration Release
+      - name: Push EXE online
+        shell: pwsh
+        run: |
+          $file = Get-ChildItem 'LZXAuto\bin\Release' -Recurse -Include '*.exe'
+          $zippedFileName = "LZXAuto-${{ matrix.dotnet-version }}-$(Get-Date -Format 'yyyyMMddHHmm').zip"
+          Get-FileHash -Algorithm SHA256 -Path $file.FullName
+          Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
+          $res = Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
+          Write-Host $res.html.body.div.a.href
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
