@@ -1,15 +1,14 @@
-name: dotnet package
+name: dotnet build EXE and test
 
 on: [push]
 
 jobs:
   build:
-
     runs-on: windows-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        dotnet-version: [ '3.1.x', '6.0.x' ]
+        dotnet-version: ["3.1.x", "6.0.x"]
 
     steps:
       - uses: actions/checkout@v3
@@ -32,11 +31,12 @@ jobs:
         run: dotnet publish LZXAuto --configuration Release
       - name: Push EXE online
         shell: pwsh
-        run:  $file = Get-ChildItem 'LZXAuto\bin\Release\*\*\publish\*.exe'
-              $zippedFileName = "LZXAuto-${{ matrix.dotnet-version }}-$(Get-Date -Format 'yyyyMMddHHmm').zip"
-              Get-FileHash -Algorithm SHA256 -Path $file.FullName
-              Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
-              $res = Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
-              Write-Host $res.html.body.div.a.href
+        run: |
+          $file = Get-ChildItem 'LZXAuto\bin\Release\*\*\publish\*.exe'
+          $zippedFileName = "LZXAuto-${{ matrix.dotnet-version }}-$(Get-Date -Format 'yyyyMMddHHmm').zip"
+          Get-FileHash -Algorithm SHA256 -Path $file.FullName
+          Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
+          $res = Invoke-RestMethod -uri 'https://paste.c-net.org/'  -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
+          Write-Host $res.html.body.div.a.href
       - name: Test
         run: dotnet test --no-restore --verbosity normal
