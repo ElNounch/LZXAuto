@@ -33,6 +33,6 @@ jobs:
           Get-FileHash -Algorithm SHA256 -Path $file
           Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zipFileName
           $res = Invoke-RestMethod -uri 'https://paste.c-net.org/' -Method Put -InFile $zipFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zipFileName ; 'x-random' = '' }
-          Write-Host "Download $file from $res.html.body.div.a.href"
+          Write-Host "Download $($zipFileName) from $($res.html.body.div.a.href)"
       - name: Test
         run: dotnet test --no-restore --verbosity normal
