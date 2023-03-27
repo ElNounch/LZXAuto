@@ -5,17 +5,12 @@ on: [push]
 jobs:
   build:
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        dotnet-version: ["3.1.x", "6.0.x"]
-
     steps:
       - uses: actions/checkout@v3
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+      - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '3.1.x'
       - uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
@@ -34,10 +29,10 @@ jobs:
         run: |
           $publishFolder = Get-ChildItem -Path 'LZXAuto\bin\Release' -Recurse -Include 'publish'
           $file = Get-ChildItem -Path $publishFolder -Recurse -Include '*.exe'
-          $zippedFileName = "LZXAuto-${{ matrix.dotnet-version }}-$( Get-Date -Format 'yyyyMMddHHmm' ).zip"
+          $zipFileName = "LZXAuto-$( git describe --tags --abbrev=0 ).zip"
           Get-FileHash -Algorithm SHA256 -Path $file
-          Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zippedFileName
-          $res = Invoke-RestMethod -uri 'https://paste.c-net.org/' -Method Put -InFile $zippedFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zippedFileName ; 'x-random' = '' }
-          Write-Host $res.html.body.div.a.href
+          Compress-Archive -LiteralPath $file.FullName -CompressionLevel 'Optimal' -DestinationPath $zipFileName
+          $res = Invoke-RestMethod -uri 'https://paste.c-net.org/' -Method Put -InFile $zipFileName -ContentType 'multipart/form-data' -Headers @{ 'X-FileName' = $zipFileName ; 'x-random' = '' }
+          Write-Host "Download ${ $file } from ${ $res.html.body.div.a.href }"
       - name: Test
         run: dotnet test --no-restore --verbosity normal
